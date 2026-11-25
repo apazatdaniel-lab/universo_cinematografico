@@ -1,0 +1,365 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}Películas · Universo Cinematográfico{% endblock %}
+
+{% block contenido %}
+<header class="encabezado">
+    <div class="container py-4">
+        <p class="etiqueta">CINE · HISTORIAS · PERSONAJES</p>
+               <h1>Películas</h1>
+        <p class="subtitulo">
+            Descubre las películas de cada universo.
+        </p>
+    </div>
+</header>
+
+<main class="container py-4">
+
+   
+
+  
+
+  
+<div class="d-flex flex-column flex-md-row
+            justify-content-between align-items-md-center gap-3 mb-4">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+        <h2 class="mb-0">Catálogo de películas</h2>
+        <div class="btn-group btn-group-sm" role="group"
+             aria-label="Ordenar películas">
+            <a class="btn btn-outline-light {% if orden == 'titulo' %}active{% endif %}"
+               href="{{ url_for('catalogo_peliculas', orden='titulo') }}">A–Z</a>
+            <a class="btn btn-outline-light {% if orden == 'anio_asc' %}active{% endif %}"
+               href="{{ url_for('catalogo_peliculas', orden='anio_asc') }}">Año ↑</a>
+            <a class="btn btn-outline-light {% if orden == 'anio_desc' %}active{% endif %}"
+               href="{{ url_for('catalogo_peliculas', orden='anio_desc') }}">Año ↓</a>
+        </div>
+        {% if rol_actual == 'usuario' %}
+            <a class="btn btn-outline-warning btn-sm"
+               href="{{ url_for('proponer_pelicula_nueva') }}">
+                Proponer película nueva
+            </a>
+        {% endif %}
+    </div>
+
+    <input
+        type="search"
+        id="busquedaPeliculas"
+        class="form-control"
+        style="max-width: 350px;"
+        placeholder="Buscar película, universo o año..."
+        aria-label="Buscar películas">
+</div>
+
+<div class="row g-2 mb-4">
+    <div class="col-12 col-md-6">
+        <select id="filtroUniverso" class="form-select">
+            <option value="">Todos los universos</option>
+            {% for universo in universos %}
+                <option value="{{ universo['nombre'] }}">
+                    {{ universo['nombre'] }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-12 col-md-6">
+        <select id="filtroFase" class="form-select">
+            <option value="">Todas las fases</option>
+            {% for fase in fases %}
+                <option value="{{ fase['nombre'] }}">
+                    {{ fase['nombre'] }} — {{ fase['universo'] }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+
+
+    {% if peliculas %}
+        <div class="row g-4" id="catalogoPeliculas">
+            {% for pelicula in peliculas %}
+                <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                    
+<article class="tarjeta h-100"
+         data-universo="{{ pelicula['universo'] or '' }}"
+         data-fase="{{ pelicula['fase'] or '' }}">
+
+                        {% if pelicula['portada'] %}
+                            <img class="portada"
+                                 src="{{ url_for(
+                                    'static',
+                                    filename='img/' ~ pelicula['portada']
+                                 ) }}"
+                                 alt="Portada de {{ pelicula['titulo'] }}">
+                        {% else %}
+                            <div class="portada-vacia">
+                                <span>🎬</span>
+                                <p>Portada pendiente</p>
+                            </div>
+                        {% endif %}
+
+                        <div class="p-3">
+                            <h3>{{ pelicula['titulo'] }}</h3>
+
+                            <p class="datos">
+                                {{ pelicula['anio_estreno'] or 'Año pendiente' }}
+                                {% if pelicula['duracion_minutos'] %}
+                                    · {{ pelicula['duracion_minutos'] }} min
+                                {% endif %}
+                            </p>
+
+                            <p>{{ pelicula['sinopsis'] or
+                                  'Sinopsis pendiente.' }}</p>
+
+                            <p class="datos">
+                                Universo: {{ pelicula['universo'] or
+                                            'Sin asignar' }}
+                            </p>
+
+                            {% if pelicula['fase'] %}
+                                <p class="datos">
+                                    Fase: {{ pelicula['fase'] }}
+                                </p>
+                            {% endif %}
+
+                            {% if pelicula['trailer_url'] %}
+                                <a class="btn btn-danger"
+                                   href="{{ pelicula['trailer_url'] }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer">
+                                    Ver tráiler
+                                </a>
+                            {% endif %}
+
+
+{% if rol_actual == 'admin' %}
+<div class="d-flex gap-2 mt-3">
+    <button
+        type="button"
+        class="btn btn-warning"
+        onclick='abrirEdicion(
+            {{ pelicula["id_pelicula"] | tojson }},
+            {{ pelicula["titulo"] | tojson }},
+            {{ pelicula["anio_estreno"] | tojson }},
+            {{ pelicula["duracion_minutos"] | tojson }},
+            {{ pelicula["sinopsis"] | tojson }},
+            {{ pelicula["portada"] | tojson }},
+            {{ pelicula["trailer_url"] | tojson }},
+            {{ pelicula["id_fase"] | tojson }},
+            {{ pelicula["id_universo"] | tojson }}
+        )'>
+        Editar
+    </button>
+
+    <form
+        action="{{ url_for('eliminar_pelicula', id_pelicula=pelicula['id_pelicula']) }}"
+        method="POST"
+        onsubmit="return confirm('¿Seguro que quieres eliminar esta película?');">
+        <button type="submit" class="btn btn-outline-danger">
+            Eliminar
+        </button>
+    </form>
+</div>
+{% endif %}
+
+<div class="mt-3">
+    <a class="btn btn-outline-light btn-sm"
+       href="{{ url_for('detalle_pelicula',
+                        id_pelicula=pelicula['id_pelicula']) }}">
+        Ver detalle y reparto
+    </a>
+</div>
+
+{% if rol_actual == 'usuario' %}
+<div class="mt-3">
+    <a class="btn btn-outline-warning"
+       href="{{ url_for('proponer_cambio',
+                        id_pelicula=pelicula['id_pelicula']) }}">
+        Proponer cambio
+    </a>
+</div>
+{% endif %}
+
+   
+
+                        </div>
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <section class="vacio">
+            <div class="icono-cine">🎞️</div>
+            <h3>Tu universo empieza aquí</h3>
+            <p>Registra un universo y añade tu primera película.</p>
+        </section>
+    {% endif %}
+
+  
+
+    <!-- FORMULARIO PARA EDITAR PELÍCULAS -->
+    <div id="panelEdicion" class="panel mb-5" hidden>
+        <h2>Editar película</h2>
+
+        <form id="formEdicion" method="POST">
+            <label class="form-label">Título</label>
+            <input id="editTitulo" name="titulo"
+                   class="form-control mb-3" required>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="form-label">Año</label>
+                    <input id="editAnio" name="anio" type="number"
+                           min="1888" max="2100"
+                           class="form-control mb-3">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Duración en minutos</label>
+                    <input id="editDuracion" name="duracion" type="number"
+                           min="1" class="form-control mb-3">
+                </div>
+            </div>
+
+            <label class="form-label">Sinopsis</label>
+            <textarea id="editSinopsis" name="sinopsis"
+                      class="form-control mb-3" rows="4"></textarea>
+
+            <label class="form-label">Archivo de portada</label>
+            <input id="editPortada" name="portada"
+                   class="form-control mb-3">
+
+            <label class="form-label">Enlace del tráiler</label>
+            <input id="editTrailer" name="trailer" type="url"
+                   class="form-control mb-3">
+            <label class="form-label">Universo</label>
+            <select id="editUniverso" name="id_universo"
+                    class="form-select mb-3" required>
+                <option value="">Selecciona un universo</option>
+                {% for universo in universos %}
+                    <option value="{{ universo['id_universo'] }}">
+                        {{ universo['nombre'] }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <label class="form-label">Fase</label>
+            <select id="editFase" name="id_fase"
+                    class="form-select mb-3">
+                <option value="">Sin fase</option>
+                {% for fase in fases %}
+                    <option value="{{ fase['id_fase'] }}">
+                        {{ fase['universo'] }} — {{ fase['nombre'] }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button class="btn btn-primary" type="submit">
+                Guardar cambios
+            </button>
+
+            <button class="btn btn-secondary" type="button"
+                    onclick="cerrarEdicion()">
+                Cancelar
+            </button>
+        </form>
+    </div>
+
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const buscador = document.getElementById("busquedaPeliculas");
+    const filtroUniverso = document.getElementById("filtroUniverso");
+    const filtroFase = document.getElementById("filtroFase");
+
+    const columnas = document.querySelectorAll(
+        "#catalogoPeliculas .col-12"
+    );
+
+    function normalizar(texto) {
+        return texto.toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim();
+    }
+
+    function filtrarPeliculas() {
+        const texto = normalizar(buscador.value);
+        const universo = filtroUniverso.value;
+        const fase = filtroFase.value;
+
+        columnas.forEach(function (columna) {
+            const tarjeta = columna.querySelector(".tarjeta");
+
+            if (!tarjeta) return;
+
+            const contenido = normalizar(tarjeta.textContent);
+            const coincideTexto = contenido.includes(texto);
+
+            const universoTarjeta =
+                tarjeta.dataset.universo || "";
+
+            const faseTarjeta =
+                tarjeta.dataset.fase || "";
+
+            const coincideUniverso =
+                !universo || universoTarjeta === universo;
+
+            const coincideFase =
+                !fase || faseTarjeta === fase;
+
+            columna.style.display =
+                coincideTexto && coincideUniverso && coincideFase
+                    ? ""
+                    : "none";
+        });
+    }
+
+    buscador.addEventListener("input", filtrarPeliculas);
+    filtroUniverso.addEventListener("change", filtrarPeliculas);
+    filtroFase.addEventListener("change", filtrarPeliculas);
+});
+</script>
+
+<script>
+function abrirEdicion(id, titulo, anio, duracion,
+                      sinopsis, portada, trailer, fase, universo) {
+    const panel = document.getElementById("panelEdicion");
+    const formulario = document.getElementById("formEdicion");
+
+    if (!panel || !formulario) {
+        alert("No se encuentra el formulario de edición.");
+        return;
+    }
+
+    formulario.action = "/peliculas/editar/" + id;
+
+    document.getElementById("editTitulo").value = titulo || "";
+    document.getElementById("editAnio").value = anio ?? "";
+    document.getElementById("editDuracion").value = duracion ?? "";
+    document.getElementById("editSinopsis").value = sinopsis || "";
+    document.getElementById("editPortada").value = portada || "";
+    document.getElementById("editTrailer").value = trailer || "";
+    document.getElementById("editFase").value = fase ?? "";
+    document.getElementById("editUniverso").value = universo ?? "";
+
+    panel.removeAttribute("hidden");
+    panel.style.display = "block";
+    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function cerrarEdicion() {
+    const panel = document.getElementById("panelEdicion");
+
+    if (panel) {
+        panel.setAttribute("hidden", "");
+        panel.style.display = "none";
+    }
+}
+</script>
+{% endblock %}

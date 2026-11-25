@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block titulo %}Series · Universo Cinematográfico{% endblock %}
+
+{% block contenido %}
+<header class="encabezado">
+    <div class="container py-4">
+        <p class="etiqueta">CINE · HISTORIAS · PERSONAJES</p>
+        <h1>Series</h1>
+        <p class="subtitulo">
+            Descubre las series de cada universo.
+        </p>
+    </div>
+</header>
+
+<main class="container py-4">
+    <div class="d-flex flex-column flex-md-row
+                justify-content-between align-items-md-center gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <h2 class="mb-0">Catálogo de series</h2>
+            <div class="btn-group btn-group-sm" role="group"
+                 aria-label="Ordenar series">
+                <a class="btn btn-outline-light {% if orden == 'titulo' %}active{% endif %}"
+                   href="{{ url_for('catalogo_series', orden='titulo') }}">A–Z</a>
+                <a class="btn btn-outline-light {% if orden == 'anio_asc' %}active{% endif %}"
+                   href="{{ url_for('catalogo_series', orden='anio_asc') }}">Año ↑</a>
+                <a class="btn btn-outline-light {% if orden == 'anio_desc' %}active{% endif %}"
+                   href="{{ url_for('catalogo_series', orden='anio_desc') }}">Año ↓</a>
+            </div>
+            {% if rol_actual == 'usuario' %}
+                <a class="btn btn-outline-warning btn-sm"
+                   href="{{ url_for('proponer_serie_nueva') }}">
+                    Proponer serie nueva
+                </a>
+            {% endif %}
+        </div>
+
+        <input
+            type="search"
+            id="busquedaSeries"
+            class="form-control"
+            style="max-width: 350px;"
+            placeholder="Buscar serie, universo o año..."
+            aria-label="Buscar series">
+    </div>
+
+    <div class="row g-2 mb-4">
+        <div class="col-12 col-md-6">
+            <select id="filtroUniversoSeries" class="form-select">
+                <option value="">Todos los universos</option>
+                {% for universo in universos %}
+                    <option value="{{ universo['nombre'] }}">
+                        {{ universo['nombre'] }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    {% if series %}
+        <div class="row g-4" id="catalogoSeries">
+            {% for serie in series %}
+                <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                    <article class="tarjeta h-100"
+                             data-universo="{{ serie['universo'] or '' }}">
+
+                        {% if serie['portada'] %}
+                            <img class="portada"
+                                 src="{{ url_for(
+                                    'static',
+                                    filename='img/' ~ serie['portada']
+                                 ) }}"
+                                 alt="Portada de {{ serie['titulo'] }}">
+                        {% else %}
+                            <div class="portada-vacia">
+                                <span>📺</span>
+                                <p>Portada pendiente</p>
+                            </div>
+                        {% endif %}
+
+                        <div class="p-3">
+                            <h3>{{ serie['titulo'] }}</h3>
+
+                            <p class="datos">
+                                {{ serie['anio_inicio'] or 'Año pendiente' }}
+                                {% if serie['temporadas'] %}
+                                    · {{ serie['temporadas'] }}
+                                    {% if serie['temporadas'] == 1 %}
+                                        temporada
+                                    {% else %}
+                                        temporadas
+                                    {% endif %}
+                                {% endif %}
+                            </p>
+
+                            <p>{{ serie['sinopsis'] or
+                                  'Sinopsis pendiente.' }}</p>
+
+                            <p class="datos">
+                                Universo: {{ serie['universo'] or
+                                            'Sin asignar' }}
+                            </p>
+
+                            {% if serie['fase'] %}
+                                <p class="datos">
+                                    Fase: {{ serie['fase'] }}
+                                </p>
+                            {% endif %}
+
+                            {% if serie['trailer_url'] %}
+                                <a class="btn btn-danger"
+                                   href="{{ serie['trailer_url'] }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer">
+                                    Ver tráiler
+                                </a>
+                            {% endif %}
+
+                            <div class="mt-3">
+                                <a class="btn btn-outline-light btn-sm"
+                                   href="{{ url_for('detalle_serie',
+                                                    id_serie=serie['id_serie']) }}">
+                                    Ver detalle y reparto
+                                </a>
+                            </div>
+
+                            {% if rol_actual == 'admin' %}
+                                <div class="d-flex gap-2 mt-3">
+                                    <a class="btn btn-warning"
+                                       href="{{ url_for('editar_serie',
+                                                        id_serie=serie['id_serie']) }}">
+                                        Editar
+                                    </a>
+
+                                    <form action="{{ url_for('eliminar_serie',
+                                                             id_serie=serie['id_serie']) }}"
+                                          method="POST"
+                                          onsubmit="return confirm('¿Eliminar esta serie? Esta acción no se puede deshacer.');">
+                                        <button class="btn btn-outline-danger">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                            {% if rol_actual == 'usuario' %}
+                                <div class="mt-3">
+                                    <a class="btn btn-outline-warning"
+                                       href="{{ url_for('proponer_cambio_serie',
+                                                        id_serie=serie['id_serie']) }}">
+                                        Proponer cambio
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <section class="vacio">
+            <div class="icono-cine">📺</div>
+            <h3>Aún no hay series</h3>
+            <p>Usa «Añadir serie» para registrar la primera.</p>
+        </section>
+    {% endif %}
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const buscador = document.getElementById("busquedaSeries");
+    const filtroUniverso = document.getElementById("filtroUniversoSeries");
+    const columnas = document.querySelectorAll("#catalogoSeries .col-12");
+
+    function normalizar(texto) {
+        return texto
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim();
+    }
+
+    function filtrarSeries() {
+        const texto = normalizar(buscador.value);
+        const universo = filtroUniverso.value;
+
+        columnas.forEach(function (columna) {
+            const tarjeta = columna.querySelector(".tarjeta");
+            if (!tarjeta) return;
+
+            const contenido = normalizar(tarjeta.textContent);
+            const coincideTexto = contenido.includes(texto);
+            const universoTarjeta = tarjeta.dataset.universo || "";
+            const coincideUniverso = !universo || universoTarjeta === universo;
+
+            columna.style.display =
+                coincideTexto && coincideUniverso ? "" : "none";
+        });
+    }
+
+    buscador.addEventListener("input", filtrarSeries);
+    filtroUniverso.addEventListener("change", filtrarSeries);
+});
+</script>
+{% endblock %}

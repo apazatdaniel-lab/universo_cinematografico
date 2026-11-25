@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block titulo %}Mis solicitudes · Universo Cinematográfico{% endblock %}
+
+{% block contenido %}
+<main class="container py-4">
+    <h2 class="mb-2">Mis solicitudes</h2>
+    <p class="text-secondary mb-4">
+        Aquí ves el estado de los cambios que propusiste.
+    </p>
+
+    {% if solicitudes %}
+        <section class="panel">
+            <div class="table-responsive">
+                <table class="table table-dark table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Título</th>
+                            <th>Estado</th>
+                            <th>Enviada (UTC)</th>
+                            <th>Revisada (UTC)</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sol in solicitudes %}
+                            <tr>
+                                <td>{{ sol['tipo'] }}</td>
+                                <td>{{ sol['titulo'] }}</td>
+                                <td>
+                                    {% if sol['estado'] == 'pendiente' %}
+                                        <span class="badge bg-warning text-dark">
+                                            Pendiente
+                                        </span>
+                                    {% elif sol['estado'] == 'aprobada' %}
+                                        <span class="badge bg-success">
+                                            Aprobada
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            Rechazada
+                                        </span>
+                                        {% if sol['motivo_rechazo'] %}
+                                            <div class="small text-secondary mt-1"
+                                                 style="overflow-wrap: anywhere;">
+                                                Motivo: {{ sol['motivo_rechazo'] }}
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                                <td>{{ sol['fecha_solicitud'] }}</td>
+                                <td>{{ sol['fecha_revision'] or '—' }}</td>
+                                <td class="text-end">
+                                    {% if sol['estado'] == 'pendiente' %}
+                                        {% if sol['tipo'] == 'Serie' %}
+                                            {% set url_cancelar = url_for('cancelar_solicitud_serie', id_solicitud=sol['id_solicitud']) %}
+                                        {% elif sol['tipo'] == 'Película nueva' %}
+                                            {% set url_cancelar = url_for('cancelar_propuesta_pelicula', id_propuesta=sol['id_solicitud']) %}
+                                        {% elif sol['tipo'] == 'Serie nueva' %}
+                                            {% set url_cancelar = url_for('cancelar_propuesta_serie', id_propuesta=sol['id_solicitud']) %}
+                                        {% else %}
+                                            {% set url_cancelar = url_for('cancelar_solicitud', id_solicitud=sol['id_solicitud']) %}
+                                        {% endif %}
+                                        <form action="{{ url_cancelar }}"
+                                              method="POST"
+                                              onsubmit="return confirm('¿Cancelar esta solicitud?');">
+                                            <button class="btn btn-outline-danger btn-sm">
+                                                Cancelar
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {% else %}
+        <section class="vacio">
+            <div class="icono-cine">📭</div>
+            <h3>Aún no has enviado solicitudes</h3>
+            <p>
+                En los catálogos de Películas y Series puedes pulsar
+                «Proponer cambio» o proponer una producción nueva.
+            </p>
+        </section>
+    {% endif %}
+</main>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block titulo %}Añadir película · Universo Cinematográfico{% endblock %}
+
+{% block contenido %}
+<main class="container py-4">
+    <h2 class="mb-4">Añadir película</h2>
+
+    <div class="row">
+        <div class="col-12 col-lg-8">
+            <section class="panel">
+                <form action="{{ url_for('nueva_pelicula') }}"
+                      method="POST">
+                    <label class="form-label">Título</label>
+                    <input class="form-control mb-3"
+                           name="titulo" required>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <label class="form-label">Año</label>
+                            <input class="form-control mb-3"
+                                   type="number"
+                                   name="anio"
+                                   min="1888"
+                                   max="2100">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Duración (min)</label>
+                            <input class="form-control mb-3"
+                                   type="number"
+                                   name="duracion"
+                                   min="1">
+                        </div>
+                    </div>
+
+                    <label class="form-label">Universo</label>
+                    <select class="form-select mb-3"
+                            name="id_universo" required>
+                        <option value="">Selecciona un universo</option>
+                        {% for universo in universos %}
+                            <option value="{{ universo['id_universo'] }}">
+                                {{ universo['nombre'] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <label class="form-label">Fase</label>
+                    <select class="form-select mb-3" name="id_fase">
+                        <option value="">Sin fase</option>
+                        {% for fase in fases %}
+                            <option value="{{ fase['id_fase'] }}">
+                                {{ fase['universo'] }} -
+                                {{ fase['nombre'] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <label class="form-label">Nombre del archivo de portada</label>
+                    <input class="form-control mb-3"
+                           name="portada"
+                           placeholder="Ej. spiderman.jpg">
+
+                    <div class="form-text mb-3">
+                        Guarda primero la imagen en la carpeta static/img.
+                    </div>
+
+                    <label class="form-label">Sinopsis</label>
+                    <textarea class="form-control mb-3"
+                              name="sinopsis" rows="3"></textarea>
+
+                    <label class="form-label">Enlace del tráiler</label>
+                    <input class="form-control mb-3"
+                           type="url"
+                           name="trailer"
+                           placeholder="https://www.youtube.com/...">
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-danger">
+                            Registrar película
+                        </button>
+                        <a class="btn btn-secondary"
+                           href="{{ url_for('inicio') }}">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
+</main>
+{% endblock %}

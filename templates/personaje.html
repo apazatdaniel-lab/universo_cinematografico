@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ personaje['nombre'] }} · Universo Cinematográfico{% endblock %}
+
+{% block contenido %}
+<main class="container py-4">
+    <a class="btn btn-outline-light btn-sm mb-4"
+       href="{{ url_for('catalogo_personajes') }}">
+        ← Volver a personajes
+    </a>
+
+    <div class="row g-4 mb-5">
+        <div class="col-12 col-md-4 col-lg-3">
+            <article class="tarjeta">
+                {% if personaje['imagen'] %}
+                    <img class="portada"
+                         src="{{ url_for(
+                            'static',
+                            filename='img/' ~ personaje['imagen']
+                         ) }}"
+                         alt="Imagen de {{ personaje['nombre'] }}">
+                {% else %}
+                    <div class="portada-vacia">
+                        <span>🦸</span>
+                        <p>Imagen pendiente</p>
+                    </div>
+                {% endif %}
+            </article>
+        </div>
+
+        <div class="col-12 col-md-8 col-lg-9">
+            <h2>{{ personaje['nombre'] }}</h2>
+
+            {% if personaje['alias'] %}
+                <p class="datos mb-1">Alias: {{ personaje['alias'] }}</p>
+            {% endif %}
+                       <p class="datos">
+                Aparece en:
+                {% if universos %}
+                    {% for u in universos %}{{ u['nombre'] }}{% if not loop.last %}, {% endif %}{% endfor %}
+                {% else %}
+                    aún sin reparto registrado
+                {% endif %}
+            </p>
+
+            {% if rol_actual == 'admin' %}
+                <div class="d-flex gap-2 mt-3">
+                    <a class="btn btn-warning"
+                       href="{{ url_for('editar_personaje',
+                                  id_personaje=personaje['id_personaje']) }}">
+                        Editar
+                    </a>
+
+                    <form action="{{ url_for('eliminar_personaje',
+                                  id_personaje=personaje['id_personaje']) }}"
+                          method="POST"
+                          onsubmit="return confirm('¿Eliminar este personaje? Esta acción no se puede deshacer.');">
+                        <button class="btn btn-outline-danger">
+                            Eliminar
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+
+            <h3 class="h5 mt-4">Descripción</h3>
+            <p style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ personaje['descripcion'] or 'Descripción pendiente.' }}</p>
+        </div>
+    </div>
+
+    <h3 class="h5 mb-3">Actores que lo interpretaron</h3>
+    {% if actores %}
+        <div class="d-flex flex-wrap gap-2 mb-5">
+            {% for actor in actores %}
+                <a class="btn btn-outline-light btn-sm"
+                   href="{{ url_for('detalle_actor',
+                                    id_actor=actor['id_actor']) }}">
+                    {{ actor['nombre'] }}
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-secondary mb-5">
+            Aún no tiene reparto registrado.
+        </p>
+    {% endif %}
+
+    <h3 class="h5 mb-3">Películas</h3>
+    {% if peliculas %}
+        <section class="panel mb-5">
+            <div class="table-responsive">
+                <table class="table table-dark table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Año</th>
+                            <th>Actor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in peliculas %}
+                            <tr>
+                                <td>{{ p['titulo'] }}</td>
+                                <td>{{ p['anio_estreno'] or '—' }}</td>
+                                <td>
+                                    <a class="link-info"
+                                       href="{{ url_for('detalle_actor',
+                                                        id_actor=p['id_actor']) }}">
+                                        {{ p['actor'] }}
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {% else %}
+        <p class="text-secondary mb-5">
+            No aparece en ninguna película registrada.
+        </p>
+    {% endif %}
+
+    <h3 class="h5 mb-3">Series</h3>
+    {% if series %}
+        <section class="panel">
+            <div class="table-responsive">
+                <table class="table table-dark table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Año de inicio</th>
+                            <th>Actor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in series %}
+                            <tr>
+                                <td>{{ s['titulo'] }}</td>
+                                <td>{{ s['anio_inicio'] or '—' }}</td>
+                                <td>
+                                    <a class="link-info"
+                                       href="{{ url_for('detalle_actor',
+                                                        id_actor=s['id_actor']) }}">
+                                        {{ s['actor'] }}
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {% else %}
+        <p class="text-secondary">
+            No aparece en ninguna serie registrada.
+        </p>
+    {% endif %}
+</main>
+{% endblock %}

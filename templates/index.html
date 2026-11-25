@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block titulo %}Inicio · Universo Cinematográfico{% endblock %}
+
+{% block contenido %}
+<header class="encabezado">
+    <div class="container py-4">
+        <p class="etiqueta">CINE · HISTORIAS · PERSONAJES</p>
+        <h1>Universo Cinematográfico</h1>
+        <p class="subtitulo">
+            Explora películas y series de universos conectados.
+        </p>
+    </div>
+</header>
+
+<main class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Películas recientes</h2>
+        <a class="btn btn-outline-light btn-sm"
+           href="{{ url_for('catalogo_peliculas') }}">
+            Ver todas
+        </a>
+    </div>
+
+    {% if peliculas %}
+        <div class="carrusel mb-5">
+            <button type="button" class="carrusel-btn anterior"
+                    aria-label="Películas anteriores">‹</button>
+
+            <div class="carrusel-pista">
+                {% for pelicula in peliculas %}
+                    <div class="carrusel-item">
+                        <article class="tarjeta h-100">
+                            {% if pelicula['portada'] %}
+                                <img class="portada"
+                                     src="{{ url_for(
+                                        'static',
+                                        filename='img/' ~ pelicula['portada']
+                                     ) }}"
+                                     alt="Portada de {{ pelicula['titulo'] }}">
+                            {% else %}
+                                <div class="portada-vacia">
+                                    <span>🎬</span>
+                                    <p>Portada pendiente</p>
+                                </div>
+                            {% endif %}
+
+                            <div class="p-3">
+                                <h3>{{ pelicula['titulo'] }}</h3>
+
+                                <p class="datos">
+                                    {{ pelicula['anio_estreno'] or 'Año pendiente' }}
+                                    {% if pelicula['duracion_minutos'] %}
+                                        · {{ pelicula['duracion_minutos'] }} min
+                                    {% endif %}
+                                </p>
+
+                                <p class="datos">
+                                    Universo: {{ pelicula['universo'] or
+                                                'Sin asignar' }}
+                                </p>
+
+                                <a class="btn btn-outline-light btn-sm"
+                                   href="{{ url_for('detalle_pelicula',
+                                        id_pelicula=pelicula['id_pelicula']) }}">
+                                    Ver detalle
+                                </a>
+                            </div>
+                        </article>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button type="button" class="carrusel-btn siguiente"
+                    aria-label="Películas siguientes">›</button>
+        </div>
+    {% else %}
+        <section class="vacio mb-5">
+            <div class="icono-cine">🎞️</div>
+            <h3>Aún no hay películas</h3>
+            <p>Usa «Añadir película» para registrar la primera.</p>
+        </section>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Series recientes</h2>
+        <a class="btn btn-outline-light btn-sm"
+           href="{{ url_for('catalogo_series') }}">
+            Ver todas
+        </a>
+    </div>
+
+    {% if series %}
+        <div class="carrusel">
+            <button type="button" class="carrusel-btn anterior"
+                    aria-label="Series anteriores">‹</button>
+
+            <div class="carrusel-pista">
+                {% for serie in series %}
+                    <div class="carrusel-item">
+                        <article class="tarjeta h-100">
+                            {% if serie['portada'] %}
+                                <img class="portada"
+                                     src="{{ url_for(
+                                        'static',
+                                        filename='img/' ~ serie['portada']
+                                     ) }}"
+                                     alt="Portada de {{ serie['titulo'] }}">
+                            {% else %}
+                                <div class="portada-vacia">
+                                    <span>📺</span>
+                                    <p>Portada pendiente</p>
+                                </div>
+                            {% endif %}
+
+                            <div class="p-3">
+                                <h3>{{ serie['titulo'] }}</h3>
+
+                                <p class="datos">
+                                    {{ serie['anio_inicio'] or 'Año pendiente' }}
+                                    {% if serie['temporadas'] %}
+                                        · {{ serie['temporadas'] }}
+                                        {% if serie['temporadas'] == 1 %}
+                                            temporada
+                                        {% else %}
+                                            temporadas
+                                        {% endif %}
+                                    {% endif %}
+                                </p>
+
+                                <p class="datos">
+                                    Universo: {{ serie['universo'] or
+                                                'Sin asignar' }}
+                                </p>
+
+                                <a class="btn btn-outline-light btn-sm"
+                                   href="{{ url_for('detalle_serie',
+                                        id_serie=serie['id_serie']) }}">
+                                    Ver detalle
+                                </a>
+                            </div>
+                        </article>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button type="button" class="carrusel-btn siguiente"
+                    aria-label="Series siguientes">›</button>
+        </div>
+    {% else %}
+        <section class="vacio">
+            <div class="icono-cine">📺</div>
+            <h3>Aún no hay series</h3>
+            <p>Usa «Añadir serie» para registrar la primera.</p>
+        </section>
+    {% endif %}
+
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const reducirMovimiento =
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    document.querySelectorAll(".carrusel").forEach(function (carrusel) {
+        const pista = carrusel.querySelector(".carrusel-pista");
+        const anterior = carrusel.querySelector(".carrusel-btn.anterior");
+        const siguiente = carrusel.querySelector(".carrusel-btn.siguiente");
+        let pausado = false;
+
+        function paso() {
+            const item = pista.querySelector(".carrusel-item");
+            if (!item) return 0;
+
+            const separacion =
+                parseFloat(getComputedStyle(pista).columnGap) || 24;
+
+            return item.getBoundingClientRect().width + separacion;
+        }
+
+        function hayDesborde() {
+            return pista.scrollWidth > pista.clientWidth + 1;
+        }
+
+        function mover(direccion) {
+            if (!hayDesborde()) return;
+
+            const maximo = pista.scrollWidth - pista.clientWidth;
+            let destino;
+
+            if (direccion > 0) {
+                destino = pista.scrollLeft >= maximo - 1
+                    ? 0
+                    : Math.min(pista.scrollLeft + paso(), maximo);
+            } else {
+                destino = pista.scrollLeft <= 1
+                    ? maximo
+                    : Math.max(pista.scrollLeft - paso(), 0);
+            }
+
+            pista.scrollTo({ left: destino, behavior: "smooth" });
+        }
+
+        anterior.addEventListener("click", function () { mover(-1); });
+        siguiente.addEventListener("click", function () { mover(1); });
+
+        carrusel.addEventListener("mouseenter", function () { pausado = true; });
+        carrusel.addEventListener("mouseleave", function () { pausado = false; });
+        carrusel.addEventListener("focusin", function () { pausado = true; });
+        carrusel.addEventListener("focusout", function () { pausado = false; });
+        carrusel.addEventListener("touchstart", function () { pausado = true; },
+                                  { passive: true });
+        carrusel.addEventListener("touchend", function () {
+            setTimeout(function () { pausado = false; }, 3000);
+        });
+
+        if (!reducirMovimiento) {
+            setInterval(function () {
+                if (!pausado && !document.hidden) mover(1);
+            }, 4000);
+        }
+    });
+});
+</script>
+{% endblock %}

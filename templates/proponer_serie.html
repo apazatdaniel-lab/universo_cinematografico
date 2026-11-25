@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block titulo %}Proponer serie · Universo Cinematográfico{% endblock %}
+
+{% block contenido %}
+<main class="container py-4">
+    <h2 class="mb-2">Proponer una serie nueva</h2>
+    <p class="text-secondary mb-4">
+        Tu propuesta no se publica hasta que un administrador la apruebe.
+    </p>
+
+    <div class="row">
+        <div class="col-12 col-lg-8">
+            <section class="panel">
+                <form action="{{ url_for('proponer_serie_nueva') }}"
+                      method="POST">
+                    <label class="form-label">Título</label>
+                    <input class="form-control mb-3"
+                           name="titulo" required>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <label class="form-label">Año de inicio</label>
+                            <input class="form-control mb-3"
+                                   type="number"
+                                   name="anio"
+                                   min="1888"
+                                   max="2100">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Temporadas</label>
+                            <input class="form-control mb-3"
+                                   type="number"
+                                   name="temporadas"
+                                   min="1">
+                        </div>
+                    </div>
+
+                    <label class="form-label">Universo</label>
+                    <select class="form-select mb-3"
+                            name="id_universo" required>
+                        <option value="">Selecciona un universo</option>
+                        {% for universo in universos %}
+                            <option value="{{ universo['id_universo'] }}">
+                                {{ universo['nombre'] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <label class="form-label">Fase</label>
+                    <select class="form-select mb-3" name="id_fase">
+                        <option value="">Sin fase</option>
+                        {% for fase in fases %}
+                            <option value="{{ fase['id_fase'] }}">
+                                {{ fase['universo'] }} -
+                                {{ fase['nombre'] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <label class="form-label">Nombre del archivo de portada</label>
+                    <input class="form-control mb-3"
+                           name="portada"
+                           placeholder="Ej. wandavision.jpg">
+
+                    <label class="form-label">Sinopsis</label>
+                    <textarea class="form-control mb-3"
+                              name="sinopsis" rows="3"></textarea>
+
+                    <label class="form-label">Enlace del tráiler</label>
+                    <input class="form-control mb-3"
+                           type="url"
+                           name="trailer"
+                           placeholder="https://www.youtube.com/...">
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-warning">
+                            Enviar propuesta
+                        </button>
+                        <a class="btn btn-secondary"
+                           href="{{ url_for('catalogo_series') }}">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
+</main>
+{% endblock %}

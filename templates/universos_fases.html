@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block titulo %}Universos y fases · Universo Cinematográfico{% endblock %}
+
+{% block contenido %}
+<main class="container py-4">
+    <h2 class="mb-4">Universos y fases</h2>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-6">
+            <section class="panel h-100">
+                <h3>Nuevo universo</h3>
+
+                <form action="{{ url_for('nuevo_universo') }}"
+                      method="POST">
+                    <label class="form-label">Nombre</label>
+                    <input class="form-control mb-3"
+                           name="nombre"
+                           required
+                           placeholder="Ej. Universo Galáctico">
+
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-control mb-3"
+                              name="descripcion"
+                              rows="3"
+                              placeholder="Describe el universo"></textarea>
+
+                    <button class="btn btn-primary w-100">
+                        Registrar universo
+                    </button>
+                </form>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <section class="panel h-100">
+                <h3>Nueva fase</h3>
+
+                <form action="{{ url_for('nueva_fase') }}"
+                      method="POST">
+                    <label class="form-label">Universo</label>
+                    <select class="form-select mb-3"
+                            name="id_universo" required>
+                        <option value="">Selecciona un universo</option>
+                        {% for universo in universos %}
+                            <option value="{{ universo['id_universo'] }}">
+                                {{ universo['nombre'] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <label class="form-label">Nombre de la fase</label>
+                    <input class="form-control mb-3"
+                           name="nombre"
+                           required
+                           placeholder="Ej. Fase 1">
+
+                    <label class="form-label">Número de fase</label>
+                    <input class="form-control mb-3"
+                           type="number"
+                           name="numero"
+                           min="1"
+                           required>
+
+                    <button class="btn btn-primary w-100">
+                        Registrar fase
+                    </button>
+                </form>
+            </section>
+        </div>
+    </div>
+
+    <section class="panel mt-4">
+        <h3>Fases registradas</h3>
+
+        {% if fases %}
+            <div class="table-responsive">
+                <table class="table table-dark table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Universo</th>
+                            <th>Número</th>
+                            <th>Nombre</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fase in fases %}
+                            <tr>
+                                <td>{{ fase['universo'] }}</td>
+                                <td>{{ fase['numero'] }}</td>
+                                <td>{{ fase['nombre'] }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="mb-0">Aún no hay fases registradas.</p>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}

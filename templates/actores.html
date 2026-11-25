@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block titulo %}Actores · Universo Cinematográfico{% endblock %}
+
+{% block contenido %}
+<header class="encabezado">
+    <div class="container py-4">
+        <p class="etiqueta">CINE · HISTORIAS · PERSONAJES</p>
+        <h1>Actores</h1>
+        <p class="subtitulo">
+            Conoce a los intérpretes de cada universo.
+        </p>
+    </div>
+</header>
+
+<main class="container py-4">
+    <div class="d-flex flex-column flex-md-row
+                justify-content-between align-items-md-center gap-3 mb-4">
+        <h2 class="mb-0">Catálogo de actores</h2>
+
+        <div class="d-flex gap-2">
+            <input
+                type="search"
+                id="busquedaActores"
+                class="form-control"
+                style="min-width: 250px;"
+                placeholder="Buscar actor o nacionalidad..."
+                aria-label="Buscar actores">
+
+            {% if rol_actual == 'admin' %}
+                <a class="btn btn-danger text-nowrap"
+                   href="{{ url_for('agregar_actor') }}">
+                    Añadir actor
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if actores %}
+        <div class="row g-4" id="catalogoActores">
+            {% for actor in actores %}
+                <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                    <article class="tarjeta h-100">
+                        {% if actor['foto'] %}
+                            <img class="portada"
+                                 src="{{ url_for(
+                                    'static',
+                                    filename='img/' ~ actor['foto']
+                                 ) }}"
+                                 alt="Foto de {{ actor['nombre'] }}">
+                        {% else %}
+                            <div class="portada-vacia">
+                                <span>👤</span>
+                                <p>Foto pendiente</p>
+                            </div>
+                        {% endif %}
+
+                        <div class="p-3">
+                            <h3>{{ actor['nombre'] }}</h3>
+
+                            <p class="datos">
+                                {{ actor['nacionalidad'] or
+                                   'Nacionalidad pendiente' }}
+                            </p>
+
+                            <a class="btn btn-outline-light btn-sm"
+                               href="{{ url_for('detalle_actor',
+                                                id_actor=actor['id_actor']) }}">
+                                Ver ficha
+                            </a>
+                        </div>
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <section class="vacio">
+            <div class="icono-cine">🎭</div>
+            <h3>Aún no hay actores</h3>
+            <p>
+                {% if rol_actual == 'admin' %}
+                    Usa «Añadir actor» para registrar el primero.
+                {% else %}
+                    Pronto se agregarán actores al catálogo.
+                {% endif %}
+            </p>
+        </section>
+    {% endif %}
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const buscador = document.getElementById("busquedaActores");
+    const columnas = document.querySelectorAll("#catalogoActores .col-12");
+
+    function normalizar(texto) {
+        return texto
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim();
+    }
+
+    buscador.addEventListener("input", function () {
+        const texto = normalizar(buscador.value);
+
+        columnas.forEach(function (columna) {
+            const contenido = normalizar(columna.textContent);
+            columna.style.display = contenido.includes(texto) ? "" : "none";
+        });
+    });
+});
+</script>
+{% endblock %}

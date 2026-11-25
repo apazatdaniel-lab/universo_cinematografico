@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ pelicula['titulo'] }} · Universo Cinematográfico{% endblock %}
+
+{% block contenido %}
+<main class="container py-4">
+    <a class="btn btn-outline-light btn-sm mb-4"
+       href="{{ url_for('catalogo_peliculas') }}">
+        ← Volver a películas
+    </a>
+
+    <div class="row g-4 mb-5">
+        <div class="col-12 col-md-4 col-lg-3">
+            <article class="tarjeta">
+                {% if pelicula['portada'] %}
+                    <img class="portada"
+                         src="{{ url_for(
+                            'static',
+                            filename='img/' ~ pelicula['portada']
+                         ) }}"
+                         alt="Portada de {{ pelicula['titulo'] }}">
+                {% else %}
+                    <div class="portada-vacia">
+                        <span>🎬</span>
+                        <p>Portada pendiente</p>
+                    </div>
+                {% endif %}
+            </article>
+        </div>
+
+        <div class="col-12 col-md-8 col-lg-9">
+            <h2>{{ pelicula['titulo'] }}</h2>
+
+            <p class="datos">
+                {{ pelicula['anio_estreno'] or 'Año pendiente' }}
+                {% if pelicula['duracion_minutos'] %}
+                    · {{ pelicula['duracion_minutos'] }} min
+                {% endif %}
+            </p>
+
+            <p class="datos mb-1">
+                Universo: {{ pelicula['universo'] or 'Sin asignar' }}
+            </p>
+
+            {% if pelicula['fase'] %}
+                <p class="datos">Fase: {{ pelicula['fase'] }}</p>
+            {% endif %}
+
+            <h3 class="h5 mt-4">Sinopsis</h3>
+            <p style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ pelicula['sinopsis'] or 'Sinopsis pendiente.' }}</p>
+
+            {% if pelicula['trailer_url'] %}
+                <a class="btn btn-danger"
+                   href="{{ pelicula['trailer_url'] }}"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    Ver tráiler
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <h3 class="h5 mb-3">Reparto</h3>
+
+    {% if reparto %}
+        <section class="panel mb-4">
+            <div class="table-responsive">
+                <table class="table table-dark table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Personaje</th>
+                            <th>Actor</th>
+                            {% if rol_actual == 'admin' %}
+                                <th></th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fila in reparto %}
+                            <tr>
+                                <td>
+                                    <a class="link-info"
+                                       href="{{ url_for('detalle_personaje',
+                                            id_personaje=fila['id_personaje']) }}">
+                                        {{ fila['personaje'] }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <a class="link-info"
+                                       href="{{ url_for('detalle_actor',
+                                            id_actor=fila['id_actor']) }}">
+                                        {{ fila['actor'] }}
+                                    </a>
+                                </td>
+                                {% if rol_actual == 'admin' %}
+                                    <td class="text-end">
+                                        <form action="{{ url_for('quitar_reparto_pelicula',
+                                                  id_pelicula=pelicula['id_pelicula'],
+                                                  id_reparto=fila['id_reparto']) }}"
+                                              method="POST"
+                                              onsubmit="return confirm('¿Quitar esta fila del reparto?');">
+                                            <button class="btn btn-outline-danger btn-sm">
+                                                Quitar
+                                            </button>
+                                        </form>
+                                    </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {% else %}
+        <p class="text-secondary mb-4">
+            Aún no hay reparto registrado para esta película.
+        </p>
+    {% endif %}
+
+    {% if rol_actual == 'admin' %}
+        <section class="panel">
+            <h3>Añadir al reparto</h3>
+
+            {% if actores and personajes %}
+                <form action="{{ url_for('agregar_reparto_pelicula',
+                                         id_pelicula=pelicula['id_pelicula']) }}"
+                      method="POST">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-5">
+                            <label class="form-label">Actor</label>
+                            <select class="form-select"
+                                    name="id_actor" required>
+                                <option value="">Selecciona un actor</option>
+                                {% for actor in actores %}
+                                    <option value="{{ actor['id_actor'] }}">
+                                        {{ actor['nombre'] }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-5">
+                            <label class="form-label">Personaje</label>
+                            <select class="form-select"
+                                    name="id_personaje" required>
+                                <option value="">Selecciona un personaje</option>
+                                {% for personaje in personajes %}
+                                    <option value="{{ personaje['id_personaje'] }}">
+                                        {{ personaje['nombre'] }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-2 d-flex align-items-end">
+                            <button class="btn btn-danger w-100">
+                                Añadir
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            {% else %}
+                <p class="mb-0">
+                    Primero registra al menos un
+                    <a class="link-info" href="{{ url_for('agregar_actor') }}">actor</a>
+                    y un
+                    <a class="link-info" href="{{ url_for('agregar_personaje') }}">personaje</a>.
+                </p>
+            {% endif %}
+        </section>
+    {% endif %}
+    <h3 class="h5 mt-5 mb-3">Calificaciones y comentarios</h3>
+
+    <section class="panel mb-4">
+        {% if resumen['total'] %}
+            <div class="fs-4 fw-bold">
+                ★ {{ '%.1f'|format(resumen['promedio']) }} / 5
+            </div>
+            <div class="text-secondary">
+                {{ resumen['total'] }}
+                {% if resumen['total'] == 1 %}calificación{% else %}calificaciones{% endif %}
+            </div>
+        {% else %}
+            <p class="mb-0 text-secondary">
+                Aún nadie ha calificado esta película.
+            </p>
+        {% endif %}
+    </section>
+
+    {% if usuario_actual %}
+        <section class="panel mb-4">
+            <h3>
+                {% if mi_valoracion %}Tu calificación{% else %}Deja tu calificación{% endif %}
+            </h3>
+
+            <form action="{{ url_for('valorar_pelicula',
+                                     id_pelicula=pelicula['id_pelicula']) }}"
+                  method="POST">
+                <label class="form-label">Calificación</label>
+                <select class="form-select mb-3"
+                        name="puntuacion"
+                        required
+                        style="max-width: 260px;">
+                    <option value="">Elige de 1 a 5</option>
+                    {% for n in [5, 4, 3, 2, 1] %}
+                        <option value="{{ n }}"
+                            {% if mi_valoracion and mi_valoracion['puntuacion'] == n %}selected{% endif %}>
+                            {{ '★' * n }}{{ '☆' * (5 - n) }} ({{ n }})
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <label class="form-label">Comentario (opcional)</label>
+                <textarea class="form-control mb-3"
+                          name="comentario"
+                          rows="3"
+                          maxlength="500">{% if mi_valoracion and mi_valoracion['comentario'] %}{{ mi_valoracion['comentario'] }}{% endif %}</textarea>
+
+                <button class="btn btn-warning">
+                    {% if mi_valoracion %}Actualizar{% else %}Publicar{% endif %}
+                </button>
+            </form>
+        </section>
+    {% else %}
+        <p class="text-secondary mb-4">
+            <a class="link-info" href="{{ url_for('login') }}">Inicia sesión</a>
+            para calificar y comentar.
+        </p>
+    {% endif %}
+
+    {% if valoraciones %}
+        <div class="d-flex flex-column gap-3">
+            {% for v in valoraciones %}
+                <article class="panel">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <strong>{{ v['usuario'] }}</strong>
+                            <span class="text-warning ms-2">{{ '★' * v['puntuacion'] }}{{ '☆' * (5 - v['puntuacion']) }}</span>
+                            <div class="small text-secondary">
+                                {{ v['fecha'] }} (UTC){% if v['fecha_edicion'] %} · editado{% endif %}
+                            </div>
+                        </div>
+
+                        {% if v['id_usuario'] == session['id_usuario'] or rol_actual == 'admin' %}
+                            <form action="{{ url_for('eliminar_valoracion_pelicula',
+                                                     id_pelicula=pelicula['id_pelicula'],
+                                                     id_valoracion=v['id_valoracion']) }}"
+                                  method="POST"
+                                  onsubmit="return confirm('¿Eliminar esta calificación?');">
+                                <button class="btn btn-outline-danger btn-sm">
+                                    Eliminar
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+
+                    {% if v['comentario'] %}
+                        <p class="mb-0 mt-2" style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ v['comentario'] }}</p>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </div>
+    {% endif %}
+</main>
+{% endblock %}

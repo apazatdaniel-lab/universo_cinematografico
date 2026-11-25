@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block titulo %}Solicitudes · Universo Cinematográfico{% endblock %}
+
+{% block contenido %}
+
+{% macro tarjeta_solicitud(sol, filas, url_aprobar, url_rechazar) %}
+    <section class="panel mb-4">
+        <div class="fs-5 fw-bold">{{ sol['actual_titulo'] }}</div>
+        <div class="text-secondary mb-3">
+            Solicitada por <strong>{{ sol['solicitante'] }}</strong>
+            · {{ sol['fecha_solicitud'] }} (UTC)
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-dark mb-3">
+                <thead>
+                    <tr>
+                        <th>Campo</th>
+                        <th>Actual</th>
+                        <th>Propuesto</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for campo, actual, propuesto in filas %}
+                        <tr>
+                            <td>{{ campo }}</td>
+                            <td style="white-space: pre-wrap;
+                                       overflow-wrap: anywhere;">{{ actual }}</td>
+                            <td style="white-space: pre-wrap;
+                                       overflow-wrap: anywhere;">{{ propuesto }}</td>
+                            <td>
+                                {% if actual|string != propuesto|string %}
+                                    <span class="badge bg-warning text-dark">
+                                        Cambia
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+                <div class="d-flex flex-column flex-md-row gap-3">
+            <form action="{{ url_aprobar }}"
+                  method="POST"
+                  onsubmit="return confirm('¿Aprobar y aplicar este cambio?');">
+                <button class="btn btn-success">Aprobar</button>
+            </form>
+
+            <form action="{{ url_rechazar }}"
+                  method="POST"
+                  class="d-flex gap-2 flex-grow-1">
+                <input class="form-control"
+                       name="motivo"
+                       minlength="3"
+                       maxlength="300"
+                       required
+                       placeholder="Motivo del rechazo (obligatorio)">
+                <button class="btn btn-outline-danger text-nowrap">
+                    Rechazar
+                </button>
+            </form>
+        </div>
+    </section>
+{% endmacro %}
+
+{% macro tarjeta_propuesta(sol, filas, url_aprobar, url_rechazar) %}
+    <section class="panel mb-4">
+        <div class="fs-5 fw-bold">{{ sol['titulo'] }}</div>
+        <div class="text-secondary mb-3">
+            Propuesta por <strong>{{ sol['solicitante'] }}</strong>
+            · {{ sol['fecha_solicitud'] }} (UTC)
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-dark mb-3">
+                <thead>
+                    <tr>
+                        <th>Campo</th>
+                        <th>Propuesto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for campo, valor in filas %}
+                        <tr>
+                            <td>{{ campo }}</td>
+                            <td style="white-space: pre-wrap;
+                                       overflow-wrap: anywhere;">{{ valor }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex flex-column flex-md-row gap-3">
+            <form action="{{ url_aprobar }}"
+                  method="POST"
+                  onsubmit="return confirm('¿Aprobar y crear esto en el catálogo?');">
+                <button class="btn btn-success">Aprobar</button>
+            </form>
+
+            <form action="{{ url_rechazar }}"
+                  method="POST"
+                  class="d-flex gap-2 flex-grow-1">
+                <input class="form-control"
+                       name="motivo"
+                       minlength="3"
+                       maxlength="300"
+                       required
+                       placeholder="Motivo del rechazo (obligatorio)">
+                <button class="btn btn-outline-danger text-nowrap">
+                    Rechazar
+                </button>
+            </form>
+        </div>
+    </section>
+{% endmacro %}
+
+<main class="container py-4">
+    <h2 class="mb-4">Solicitudes de cambio</h2>
+
+    <h3 class="h5 mb-3">Películas pendientes</h3>
+
+    {% if pendientes %}
+        {% for sol in pendientes %}
+            {% set filas = [
+                ('Título', sol['actual_titulo'] or '', sol['titulo'] or ''),
+                ('Año', sol['actual_anio'] or '', sol['anio_estreno'] or ''),
+                ('Duración (min)', sol['actual_duracion'] or '',
+                                   sol['duracion_minutos'] or ''),
+                ('Universo', sol['actual_universo'] or '',
+                             sol['propuesto_universo'] or ''),
+                ('Fase', sol['actual_fase'] or 'Sin fase',
+                         sol['propuesto_fase'] or 'Sin fase'),
+                ('Portada', sol['actual_portada'] or '',
+                            sol['portada'] or ''),
+                ('Sinopsis', sol['actual_sinopsis'] or '',
+                             sol['sinopsis'] or ''),
+                ('Tráiler', sol['actual_trailer'] or '',
+                            sol['trailer_url'] or '')
+            ] %}
+            {{ tarjeta_solicitud(
+                sol, filas,
+                url_for('aprobar_solicitud',
+                        id_solicitud=sol['id_solicitud']),
+                url_for('rechazar_solicitud',
+                        id_solicitud=sol['id_solicitud'])
+            ) }}
+        {% endfor %}
+    {% else %}
+        <p class="text-secondary mb-4">
+            No hay solicitudes pendientes de películas.
+        </p>
+    {% endif %}
+
+    <h3 class="h5 mt-5 mb-3">Series pendientes</h3>
+
+    {% if pendientes_series %}
+        {% for sol in pendientes_series %}
+            {% set filas = [
+                ('Título', sol['actual_titulo'] or '', sol['titulo'] or ''),
+                ('Año de inicio', sol['actual_anio'] or '',
+                                  sol['anio_inicio'] or ''),
+                ('Temporadas', sol['actual_temporadas'] or '',
+                               sol['temporadas'] or ''),
+                ('Universo', sol['actual_universo'] or '',
+                             sol['propuesto_universo'] or ''),
+                ('Fase', sol['actual_fase'] or 'Sin fase',
+                         sol['propuesto_fase'] or 'Sin fase'),
+                ('Portada', sol['actual_portada'] or '',
+                            sol['portada'] or ''),
+                ('Sinopsis', sol['actual_sinopsis'] or '',
+                             sol['sinopsis'] or ''),
+                ('Tráiler', sol['actual_trailer'] or '',
+                            sol['trailer_url'] or '')
+            ] %}
+            {{ tarjeta_solicitud(
+                sol, filas,
+                url_for('aprobar_solicitud_serie',
+                        id_solicitud=sol['id_solicitud']),
+                url_for('rechazar_solicitud_serie',
+                        id_solicitud=sol['id_solicitud'])
+            ) }}
+        {% endfor %}
+    {% else %}
+        <p class="text-secondary mb-4">
+            No hay solicitudes pendientes de series.
+        </p>
+    {% endif %}
+
+    <h3 class="h5 mt-5 mb-3">Películas nuevas propuestas</h3>
+
+    {% if propuestas_peliculas %}
+        {% for sol in propuestas_peliculas %}
+            {% set filas = [
+                ('Título', sol['titulo'] or ''),
+                ('Año', sol['anio_estreno'] or ''),
+                ('Duración (min)', sol['duracion_minutos'] or ''),
+                ('Universo', sol['universo'] or ''),
+                ('Fase', sol['fase'] or 'Sin fase'),
+                ('Portada', sol['portada'] or ''),
+                ('Sinopsis', sol['sinopsis'] or ''),
+                ('Tráiler', sol['trailer_url'] or '')
+            ] %}
+            {{ tarjeta_propuesta(
+                sol, filas,
+                url_for('aprobar_propuesta_pelicula',
+                        id_propuesta=sol['id_propuesta']),
+                url_for('rechazar_propuesta_pelicula',
+                        id_propuesta=sol['id_propuesta'])
+            ) }}
+        {% endfor %}
+    {% else %}
+        <p class="text-secondary mb-4">
+            No hay propuestas pendientes de películas nuevas.
+        </p>
+    {% endif %}
+
+    <h3 class="h5 mt-5 mb-3">Series nuevas propuestas</h3>
+
+    {% if propuestas_series %}
+        {% for sol in propuestas_series %}
+            {% set filas = [
+                ('Título', sol['titulo'] or ''),
+                ('Año de inicio', sol['anio_inicio'] or ''),
+                ('Temporadas', sol['temporadas'] or ''),
+                ('Universo', sol['universo'] or ''),
+                ('Fase', sol['fase'] or 'Sin fase'),
+                ('Portada', sol['portada'] or ''),
+                ('Sinopsis', sol['sinopsis'] or ''),
+                ('Tráiler', sol['trailer_url'] or '')
+            ] %}
+            {{ tarjeta_propuesta(
+                sol, filas,
+                url_for('aprobar_propuesta_serie',
+                        id_propuesta=sol['id_propuesta']),
+                url_for('rechazar_propuesta_serie',
+                        id_propuesta=sol['id_propuesta'])
+            ) }}
+        {% endfor %}
+    {% else %}
+        <p class="text-secondary mb-4">
+            No hay propuestas pendientes de series nuevas.
+        </p>
+    {% endif %}
+
+    <h3 class="h5 mt-5 mb-3">Historial reciente</h3>
+
+    {% if historial %}
+        <section class="panel">
+            <div class="table-responsive">
+                <table class="table table-dark table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Título</th>
+                            <th>Solicitante</th>
+                            <th>Estado</th>
+                            <th>Revisada por</th>
+                            <th>Motivo</th>
+                            <th>Fecha (UTC)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for h in historial %}
+                            <tr>
+                                <td>{{ h['tipo'] }}</td>
+                                <td>{{ h['titulo'] }}</td>
+                                <td>{{ h['solicitante'] }}</td>
+                                <td>
+                                    {% if h['estado'] == 'aprobada' %}
+                                        <span class="badge bg-success">Aprobada</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Rechazada</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ h['revisor'] or '—' }}</td>
+                                <td style="overflow-wrap: anywhere;">{{ h['motivo_rechazo'] or '—' }}</td>
+                                <td>{{ h['fecha_revision'] }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {% else %}
+        <p class="text-secondary">Aún no se ha revisado ninguna solicitud.</p>
+    {% endif %}
+</main>
+{% endblock %}

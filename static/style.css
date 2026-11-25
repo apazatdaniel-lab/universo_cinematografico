@@ -1,0 +1,289 @@
+
+body {
+    margin: 0;
+    background: #0b1020;
+    color: #f5f5f5;
+    font-family: Arial, sans-serif;
+}
+
+.encabezado {
+    background: linear-gradient(135deg, #172554, #111827);
+    border-bottom: 1px solid #29344d;
+}
+
+.etiqueta {
+    color: #f87171;
+    font-size: 0.8rem;
+    font-weight: bold;
+    letter-spacing: 3px;
+}
+
+.encabezado h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+}
+
+.subtitulo {
+    color: #cbd5e1;
+}
+
+main h2 {
+    font-weight: bold;
+}
+
+.tarjeta {
+    overflow: hidden;
+    background: #151c2e;
+    border: 1px solid #29344d;
+    border-radius: 14px;
+}
+
+.portada,
+.portada-vacia {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+}
+
+.portada-vacia {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #202a40;
+    color: #cbd5e1;
+}
+
+.portada-vacia span,
+.icono-cine {
+    font-size: 3rem;
+}
+
+.tarjeta h3 {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.tarjeta p {
+    color: #d1d5db;
+    overflow-wrap: anywhere;
+}
+
+.tarjeta .datos {
+    color: #9ca3af;
+    font-size: 0.9rem;
+}
+
+.vacio {
+    padding: 65px 20px;
+    text-align: center;
+    background: #151c2e;
+    border: 1px dashed #475569;
+    border-radius: 16px;
+}
+
+.vacio p {
+    max-width: 550px;
+    margin: 15px auto 0;
+    color: #cbd5e1;
+}
+
+.pie {
+    padding: 25px 15px;
+    text-align: center;
+    color: #9ca3af;
+    border-top: 1px solid #29344d;
+}
+
+
+.panel {
+    background: #151c2e;
+    border: 1px solid #29344d;
+    border-radius: 14px;
+    padding: 22px;
+}
+
+.panel h3 {
+    font-size: 1.15rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.panel .form-label {
+    color: #e2e8f0;
+    font-weight: 600;
+}
+
+.panel .form-control,
+.panel .form-select {
+    background-color: #0b1020;
+    color: #f5f5f5;
+    border-color: #475569;
+}
+
+.panel .form-control::placeholder {
+    color: #94a3b8;
+}
+
+.panel .form-control:focus,
+.panel .form-select:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 0.2rem rgba(96, 165, 250, 0.2);
+}
+
+.panel .form-select option {
+    background: #151c2e;
+    color: #f5f5f5;
+}
+
+
+
+/* Portadas de películas */
+.portada {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+    display: block;
+    background: #202b40;
+}
+
+/* Espacio para películas sin portada */
+.portada-vacia {
+    width: 100%;
+    height: 350px;
+    background: #202b40;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+}
+
+.portada-vacia span {
+    font-size: 3rem;
+}
+
+/* Tarjetas del catálogo */
+.tarjeta {
+    height: 100%;
+    overflow: hidden;
+    background: #151e30;
+    border: 1px solid #303b52;
+    border-radius: 14px;
+    color: #f5f7fb;
+    overflow-wrap: anywhere;
+}
+
+.tarjeta h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.tarjeta p {
+    line-height: 1.6;
+}
+
+.tarjeta .datos {
+    color: #aebfda;
+    font-size: 0.9rem;
+}
+
+.tarjeta .p-3 {
+    display: flex;
+    flex-direction: column;
+}
+
+.tarjeta .btn {
+    align-self: flex-start;
+    margin-top: auto;
+}
+
+/* Controla correctamente los elementos ocultos */
+[hidden] {
+    display: none !important;
+}
+
+/* Barra de navegación */
+.barra-nav {
+    background: #111827;
+    border-bottom: 1px solid #29344d;
+}
+
+.barra-nav .nav-link.active {
+    color: #f87171;
+    font-weight: 600;
+}
+
+.panel .form-text {
+    color: #94a3b8;
+}
+
+/* Carrusel del inicio */
+.carrusel {
+    position: relative;
+}
+
+.carrusel-pista {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    padding-bottom: 0.5rem;
+    scrollbar-width: none;
+}
+
+.carrusel-pista::-webkit-scrollbar {
+    display: none;
+}
+
+.carrusel-item {
+    flex: 0 0 82%;
+    scroll-snap-align: start;
+}
+
+@media (min-width: 576px) {
+    .carrusel-item {
+        flex-basis: calc((100% - 1.5rem) / 2);
+    }
+}
+
+@media (min-width: 992px) {
+    .carrusel-item {
+        flex-basis: calc((100% - 3rem) / 3);
+    }
+}
+
+@media (min-width: 1200px) {
+    .carrusel-item {
+        flex-basis: calc((100% - 4.5rem) / 4);
+    }
+}
+
+.carrusel-btn {
+    position: absolute;
+    top: 40%;
+    transform: translateY(-50%);
+    z-index: 2;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid #475569;
+    background: rgba(11, 16, 32, 0.85);
+    color: #f5f5f5;
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.carrusel-btn:hover {
+    background: #172554;
+}
+
+.carrusel-btn.anterior {
+    left: -14px;
+}
+
+.carrusel-btn.siguiente {
+    right: -14px;
+}

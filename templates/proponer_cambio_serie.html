@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block titulo %}Proponer cambio · Universo Cinematográfico{% endblock %}
+
+{% block contenido %}
+<main class="container py-4">
+    <h2 class="mb-2">Proponer cambio</h2>
+    <p class="text-secondary mb-4">
+        Modifica lo que quieras corregir de «{{ serie['titulo'] }}».
+        Los cambios no se aplican hasta que un administrador los apruebe.
+    </p>
+
+    <div class="row">
+        <div class="col-12 col-lg-8">
+            <section class="panel">
+                <form action="{{ url_for('proponer_cambio_serie',
+                                         id_serie=serie['id_serie']) }}"
+                      method="POST">
+                    <label class="form-label">Título</label>
+                    <input class="form-control mb-3"
+                           name="titulo"
+                           value="{{ serie['titulo'] }}"
+                           required>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <label class="form-label">Año de inicio</label>
+                            <input class="form-control mb-3"
+                                   type="number"
+                                   name="anio"
+                                   min="1888"
+                                   max="2100"
+                                   value="{{ serie['anio_inicio'] or '' }}">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Temporadas</label>
+                            <input class="form-control mb-3"
+                                   type="number"
+                                   name="temporadas"
+                                   min="1"
+                                   value="{{ serie['temporadas'] or '' }}">
+                        </div>
+                    </div>
+
+                    <label class="form-label">Universo</label>
+                    <select class="form-select mb-3"
+                            name="id_universo" required>
+                        <option value="">Selecciona un universo</option>
+                        {% for universo in universos %}
+                            <option value="{{ universo['id_universo'] }}"
+                                {% if universo['id_universo'] == serie['id_universo'] %}selected{% endif %}>
+                                {{ universo['nombre'] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <label class="form-label">Fase</label>
+                    <select class="form-select mb-3" name="id_fase">
+                        <option value="">Sin fase</option>
+                        {% for fase in fases %}
+                            <option value="{{ fase['id_fase'] }}"
+                                {% if fase['id_fase'] == serie['id_fase'] %}selected{% endif %}>
+                                {{ fase['universo'] }} - {{ fase['nombre'] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <label class="form-label">Archivo de portada</label>
+                    <input class="form-control mb-3"
+                           name="portada"
+                           value="{{ serie['portada'] or '' }}">
+
+                    <label class="form-label">Sinopsis</label>
+                    <textarea class="form-control mb-3"
+                              name="sinopsis"
+                              rows="4">{{ serie['sinopsis'] or '' }}</textarea>
+
+                    <label class="form-label">Enlace del tráiler</label>
+                    <input class="form-control mb-3"
+                           type="url"
+                           name="trailer"
+                           value="{{ serie['trailer_url'] or '' }}">
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-warning">
+                            Enviar solicitud
+                        </button>
+                        <a class="btn btn-secondary"
+                           href="{{ url_for('catalogo_series') }}">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
+</main>
+{% endblock %}
